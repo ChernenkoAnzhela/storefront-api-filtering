@@ -37,7 +37,7 @@
   {%- endfor -%}
 </div>
 
-{%- paginate collection.products by 10 -%}
+{%- paginate collection.products by 5 -%}
   <div class="container main-collection-grid-wrapper">
     {%- for product in collection.products -%}
       <a href="{{- product.url -}}" class="item-card">
