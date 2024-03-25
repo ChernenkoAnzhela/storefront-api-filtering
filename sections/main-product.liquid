@@ -1,0 +1,51 @@
+<style>
+    .visuallyhidden {
+        border: 0;
+        clip: rect(0 0 0 0);
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+        white-space: nowrap;
+    }
+</style>
+
+<h2>{{ product.title }}</h2>
+
+<dl>
+    <dt><span class="visuallyhidden">Regular price</span></dt>
+    <dd>{{ product.price | money }}</dd>
+
+    {%- if product.vendor -%}
+        <dt><span class="visuallyhidden">Vendor</span></dt>
+        <dd>{{ product.vendor }}</dd>
+    {%- endif -%}
+
+</dl>
+
+<p>{{ product.description }}</p>
+
+{%- assign featured_image = product.featured_image -%}
+<img src="{{ featured_image | img_url: '1024x'}}" alt="{{ featured_image.alt | escape }}">
+
+{% form 'product', product %}
+    {% if product.variants %}
+        <select name="id">
+            {%- for variant in product.variants -%}
+                <option selected="selected" value="{{ variant.id }}">{{ variant.title }}</option>
+            {%- endfor -%}
+        </select>
+        {% endif %}
+
+
+    <button type="submit" {% unless product.available %} disabled="disabled"{% endunless %}>
+        {%- if product.available -%}
+            Add to Cart
+        {%- else -%}
+            Sold Out
+        {%- endif -%}
+    </button>
+    {{ form | payment_button }}
+{% endform %}

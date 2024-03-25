@@ -1,0 +1,84 @@
+<div class="product-card color-{{ settings.card_color_scheme }} color-hover-{{ settings.card_color_scheme_hover }}">
+
+    {%- if product.featured_media -%}
+
+                <img
+                        srcset="
+                  {%- if product.featured_media.width >= 165 -%}{{ product.featured_media | image_url: width: 165 }} 165w,{%- endif -%}
+                  {%- if product.featured_media.width >= 360 -%}{{ product.featured_media | image_url: width: 360 }} 360w,{%- endif -%}
+                  {%- if product.featured_media.width >= 533 -%}{{ product.featured_media | image_url: width: 533 }} 533w,{%- endif -%}
+                  {%- if product.featured_media.width >= 720 -%}{{ product.featured_media | image_url: width: 720 }} 720w,{%- endif -%}
+                  {%- if product.featured_media.width >= 940 -%}{{ product.featured_media | image_url: width: 940 }} 940w,{%- endif -%}
+                  {%- if product.featured_media.width >= 1066 -%}{{ product.featured_media | image_url: width: 1066 }} 1066w,{%- endif -%}
+                  {{ product.featured_media | image_url }} {{ product.featured_media.width }}w
+                "
+                        src="{{ product.featured_media | image_url: width: 533 }}"
+                        sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 130 | divided_by: 4 }}px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)"
+                        alt="{{ product.featured_media.alt | escape }}"
+                        class="motion-reduce"
+                        {% unless lazy_load == false %}
+                            loading="lazy"
+                        {% endunless %}
+                        width="{{ product.featured_media.width }}"
+                        height="{{ product.featured_media.height }}"
+                >
+
+
+            {% if section.settings.day_price and product.metafields.custom.price_fer_day.value %}
+                <span class="day-price">
+                  <span class="price">
+                      {{ product.price | divided_by: 30 | round: 2 | money }}
+                  </span><br>/{{ 'general.featured_products.day_price' | t }}
+                </span>
+            {% endif %}
+
+            {% if product.metafields.custom.benefit_list != blank and section.settings.benefit_list %}
+                <ul class="benefits-list">
+                    {% for item in product.metafields.custom.benefit_list.value %}
+
+                        <li class="benefit-item">
+                            {%- if item.icon != blank -%}
+                                {%- capture sizes -%}
+                                    (min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px,
+                                    (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)
+                                {%- endcapture -%}
+                                {{
+                                item.icon
+                                | image_url: width: 1500
+                                | image_tag: sizes: sizes, widths: '165, 360, 535, 750, 1070, 1500'
+                                }}
+                            {%- else -%}
+                                {{ 'detailed-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                            {%- endif -%}
+
+                            <span>
+                        {{ item.title }}
+                    </span>
+                        </li>
+
+
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+    {%- endif -%}
+
+</div>
+<div class="product-card-info">
+    <strong>
+        {{ product.title }}
+    </strong>
+</div>
+
+<div class="product-card-price">
+    {% if product.available %}
+        {% if product.price_varies  %}
+            <span>From {{ product.price_min | money }}</span>
+        {% else %}
+            <span>{{ product.price | money }}</span>
+        {% endif %}
+    {% else %}
+        <span>Sold out</span>
+    {% endif %}
+</div>
+

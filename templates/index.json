@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "featured_products": {
+      "type": "featured-products",
+      "settings": {
+        "heading": "<h2>Section title<\/h2>",
+        "horizontal_alignment": "center",
+        "color_scheme": "",
+        "collection": "hydrogen",
+        "products_to_show": 4,
+        "columns_desktop": 4,
+        "btn_text": "See All Products",
+        "btn_link": "shopify:\/\/collections\/all",
+        "day_price": false,
+        "benefit_list": false,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "featured_products"
+  ]
+}

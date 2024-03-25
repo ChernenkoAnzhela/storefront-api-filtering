@@ -1,0 +1,64 @@
+{{- 'main-collection-grid.css' | asset_url | stylesheet_tag -}}
+<script src="{{- 'filter-products.js' | asset_url -}}" defer="defer"></script>
+
+<h2>
+  {{- collection.title -}}
+</h2>
+
+<div class="filter-wrapper container">
+  <span>
+    Filter:
+  </span>
+  {%- for filter in collection.filters -%}
+    {%- if filter.type == 'price_range' -%}
+      <details>
+        <summary>{{- filter.label -}}</summary>
+       <div class="js-filter-price">
+         <input type="number" class="filter-price__min" step="10" value="{%- if filter.min_value.value -%}{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.'}}{%- else -%}{{ 0 | money_without_currency | replace: ',', '' }}{%- endif -%}">
+         -
+         <input type="number" class="filter-price__max" step="10" value=" {%- if filter.max_value.value -%}{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.'}}{%- else -%}{{ filter.range_max | money_without_currency | replace: ',', '' }}{%- endif -%}">
+       </div>
+      </details>
+    {%- endif -%}
+
+    {%- if filter.type == 'list' -%}
+      <details>
+        <summary>{{- filter.label -}}</summary>
+        <div class="js-filter-list">
+          {%- for value in filter.values -%}
+            <label>
+              <input type="checkbox" data-filter-type="{{- filter.label | downcase | replace: "tags", " tag" | replace: "brand", "productVendor" | replace: "availability", "available" -}}" name="{{ value.value | replace: "1", "true" | replace: "0", "false" }}" value="{{ value.value | replace: "1", "true" | replace: "0", "false"}}">
+              {{ value.value | replace: "1", "Available" | replace: "0", "Disable"}}
+            </label><br>
+          {%- endfor -%}
+        </div>
+      </details>
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+
+{%- paginate collection.products by 10 -%}
+  <div class="container main-collection-grid-wrapper">
+    {%- for product in collection.products -%}
+      <a href="{{- product.url -}}" class="item-card">
+        {%- render 'card-product', product: product -%}
+      </a>
+    {%- endfor -%}
+  </div>
+
+  <div class="container main-collection-grid-pagination js-default-pagination">
+    {{- paginate | default_pagination -}}
+  </div>
+
+  <div id="pagination-controls" class="js-pagination-controls container main-collection-grid-pagination">
+    <button id="prev-button" style="display: none;">« Previous</button>
+    <button id="next-button" style="display: none;">Next »</button>
+  </div>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Collection pages",
+  "class": "main-collection-grid"
+}
+{% endschema %}

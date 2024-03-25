@@ -1,0 +1,220 @@
+.container{
+    max-width: var(--page-width);
+    margin-left: auto;
+    margin-right: auto;
+}
+body{
+    font-family: var(--font-body-family);
+    font-style: var(--font-body-style);
+    font-weight: var(--font-body-weight);
+    letter-spacing: calc(var(--font-heading-scale) * 0.06rem);
+    color: var(--color-foreground);
+
+}
+
+
+h1,h2,h3,h4,h5,h6{
+    font-family: var(--font-heading-family);
+    font-style: var(--font-heading-style);
+    font-weight: var(--font-heading-weight);
+    letter-spacing: calc(var(--font-heading-scale) * 0.06rem);
+    color: var(--color-foreground);
+    line-height: calc(1 + 0.3 / max(1, var(--font-heading-scale)));
+    word-break: break-word;
+}
+
+h1,
+.h1 {
+    font-size: calc(var(--font-heading-scale) * 3rem);
+}
+
+@media only screen and (min-width: 750px) {
+    h1,
+    .h1 {
+        font-size: calc(var(--font-heading-scale) * 4rem);
+    }
+}
+
+h2,
+.h2 {
+    font-size: calc(var(--font-heading-scale) * 3.4rem);
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+@media only screen and (min-width: 750px) {
+    h2,
+    .h2 {
+        font-size: calc(var(--font-heading-scale) * 4rem);
+        margin-top: 0.83em;
+        margin-bottom: 0.4em;
+    }
+}
+
+h3,
+.h3 {
+    font-size: calc(var(--font-heading-scale) * 3rem);
+    margin: 0;
+}
+main {
+    padding-top: 18px;
+}
+@media only screen and (min-width: 750px) {
+    h3,
+    .h3 {
+        font-size: calc(var(--font-heading-scale) * 3.4rem);
+    }
+}
+
+h4,
+.h4 {
+    font-family: var(--font-heading-family);
+    font-style: var(--font-heading-style);
+    font-size: calc(var(--font-heading-scale) * 2.4rem);
+    margin-top: 10px;
+    margin-bottom: 15px;
+    line-height: normal;
+}
+
+h5,
+.h5 {
+    font-size: calc(var(--font-heading-scale) * 1.2rem);
+}
+
+@media only screen and (min-width: 750px) {
+    h5,
+    .h5 {
+        font-size: calc(var(--font-heading-scale) * 1.3rem);
+    }
+}
+
+h6,
+.h6 {
+    color: var(--color-foreground);
+    margin-block-start: 1.67em;
+    margin-block-end: 1.67em;
+}
+
+.swiper-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    padding: 0 1rem;
+    overflow: hidden;
+}
+.swiper-button-next:after, .swiper-rtl .swiper-button-prev:after,
+.swiper-button-prev:after, .swiper-rtl .swiper-button-next:after{
+    display: none;
+}
+
+.swiper-slide {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.swiper-slide img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+.swiper-pagination {
+    position: relative;
+    margin-top: 20px;
+}
+
+.product-card {
+    padding-bottom: 100%;
+    width: 100%;
+    position: relative;
+    border-radius: 20px;
+}
+.swiper-slide .product-card img.motion-reduce {
+    height: -webkit-fill-available;
+}
+
+span.swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+    background: transparent;
+    border: 1px solid var(--color-foreground);
+    opacity: 1;
+}
+
+span.swiper-pagination-bullet-active{
+    background: var(--color-button);
+    border: 1px solid var(--color-button);
+}
+
+.swiper-horizontal>.swiper-pagination-bullets .swiper-pagination-bullet, .swiper-pagination-horizontal.swiper-pagination-bullets .swiper-pagination-bullet {
+    margin: 0 10px;
+}
+
+.product-card img.motion-reduce {
+    position: absolute;
+}
+
+.button{
+    background: var(--color-button);
+    border-radius: var(--buttons-radius);
+    border:var(--buttons-border-width) solid var(--color-button);
+    color: var(--color-button-text);
+    text-decoration: none;
+    transition: 0.3s;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 270px;
+    max-width: 100%;
+}
+
+.button:hover{
+    background: transparent;
+    color: var(--color-foreground);
+}
+
+.btn-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.button.disabled {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+
+
+
+@media screen and (max-width: 967px){
+    .container{
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+    .button {
+        padding: 0;
+        width: 100%;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 270px;
+    }
+}
+
+
+@media screen and (min-width: 968px){
+    .button{
+       font-size: 1.8rem;
+    }
+    .btn-wrapper{
+        margin-top: 8rem;
+    }
+}
+
+

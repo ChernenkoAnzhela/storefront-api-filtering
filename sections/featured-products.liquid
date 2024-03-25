@@ -1,0 +1,175 @@
+{{ 'section-featured-products.css' | asset_url | stylesheet_tag }}
+{%- style -%}
+    .section-{{ section.id }}{
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+    .section-{{ section.id }}{
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+    }
+{%- endstyle -%}
+
+<div class="section-{{ section.id }} color-{{ section.settings.color_scheme }} container">
+    {% if section.settings.heading != blank %}
+    <div class="section-heading text-{{ section.settings.horizontal_alignment }}">
+        {{ section.settings.heading }}
+    </div>
+    {% endif %}
+
+        <slider-component class="wrapper">
+         <div class="swiper-container mySwiper"
+             id="Slider-{{ section.id }}"
+             data-slider-products-to-show="{{ section.settings.columns_desktop }}"
+         >
+                <div class="swiper-wrapper">
+                    {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+                        <a href="{{ product.url }}" class="swiper-slide item-card">{% render 'card-product', product: product, section: section %}</a>
+                    {%- endfor -%}
+
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </slider-component>
+
+  {% if section.settings.btn_text != blank %}
+    <div class="btn-wrapper">
+      <a href="{{ section.settings.btn_link }}" class="button {% if section.settings.btn_link == blank %}disabled{% endif %}">
+        {{ section.settings.btn_text }}
+      </a>
+    </div>
+
+  {% endif %}
+
+
+</div>
+
+{% schema %}
+{
+  "name": "t:settings_schema.featured_products.name",
+  "tag": "section",
+  "class": "section section-featured-products",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:settings_schema.featured_products.content"
+    },
+    {
+      "type": "richtext",
+      "id": "heading",
+      "label": "t:settings_schema.featured_products.label.heading",
+      "default": "<h2>Section title</h2>"
+    },
+    {
+      "type": "select",
+      "id": "horizontal_alignment",
+      "label": "t:settings_schema.featured_products.label.horizontal_alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "background-1"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:sections.featured-collection.settings.collection.label"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 25,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.featured-collection.settings.products_to_show.label"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 4,
+      "label": "t:sections.featured-collection.settings.columns_desktop.label"
+    },
+    {
+      "type": "text",
+      "id": "btn_text",
+      "label": "t:settings_schema.featured_products.label.btn_text",
+      "default": "See All Products"
+    },
+    {
+      "type": "url",
+      "id": "btn_link",
+      "label": "t:settings_schema.featured_products.label.btn_link"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "day_price",
+      "label": "t:settings_schema.featured_products.label.day_price",
+      "info": "Create or Enable 'Price per day' metafield for each products",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "benefit_list",
+      "label": "t:settings_schema.featured_products.label.benefit_list",
+      "info": "Create 'Benefit list' metafield or add items for each products",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:settings_schema.featured_products.name"
+    }
+  ]
+}
+{% endschema %}

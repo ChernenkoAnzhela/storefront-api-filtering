@@ -1,0 +1,110 @@
+.main-collection-grid .main-collection-grid-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.main-collection-grid .product-card img.motion-reduce {
+  width: 100%;
+  height: -webkit-fill-available;
+}
+
+.main-collection-grid .item-card {
+  width: calc(25% - 10px);
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.main-collection-grid .main-collection-grid-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+.main-collection-grid .main-collection-grid-pagination span {
+  padding: 0 5px;
+}
+
+.main-collection-grid h2 {
+  text-align: center;
+}
+
+.main-collection-grid .filter-wrapper.container {
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+
+.main-collection-grid .js-filter-list,
+.main-collection-grid .js-filter-price {
+  position: absolute;
+  top: 22px;
+  background: white;
+  padding: 10px;
+  min-width: max-content;
+  left: -15px;
+}
+.main-collection-grid details {
+  margin-left: 15px;
+  position: relative;
+}
+
+.main-collection-grid .js-pagination-controls {
+  display: none;
+}
+
+.main-collection-grid details summary {
+  outline: none;
+  list-style: none;
+}
+
+.main-collection-grid details summary::-webkit-details-marker {
+  display: none;
+}
+
+.main-collection-grid .main-collection-grid-pagination .page {
+  display: none;
+}
+
+.main-collection-grid span.next,
+.main-collection-grid span.prev,
+.main-collection-grid #next-button,
+.main-collection-grid #prev-button{
+  background: black;
+  width: 90px;
+  color: white;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-collection-grid span.next a,
+.main-collection-grid span.prev a {
+  color: white;
+  text-decoration: none;
+}
+
+@media screen and (max-width: 768px) {
+  .main-collection-grid .js-filter-list,
+  .main-collection-grid .js-filter-price {
+    position: static;
+  }
+
+  .main-collection-grid details {
+    margin-left: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .main-collection-grid .filter-wrapper.container {
+    flex-direction: column;
+}
+
+  .main-collection-grid .main-collection-grid-wrapper {
+   padding: 0;
+  }
+
+  .main-collection-grid .item-card {
+    width: calc(50% - 10px);
+  }
+}
