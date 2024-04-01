@@ -1,11 +1,15 @@
-{% assign productListString = canonical_url | remove: shop.secure_url | remove_first: '/search?q=' %}
+{% assign productListString = canonical_url | remove: shop.secure_url | remove: collection.url | remove_first: '/search?q=' | remove_first: '?q=' %}
 {% assign productListArray = productListString | split: '+' %}
 
 <div class="container main-collection-grid-wrapper">
   {%- for handle in productListArray -%}
-    <a href="{{- all_products[handle].url -}}" class="item-card">
-      {%- render 'card-product', product: all_products[handle] -%}
-    </a>
+    {%- for product in collections[collection.handle].products -%}
+      {%- if product.handle == handle -%}
+        <a href="{{- product.url -}}" class="item-card">
+          {%- render 'card-product', product: product -%}
+        </a>
+      {%- endif -%}
+    {%- endfor -%}
   {%- endfor -%}
 </div>
 
