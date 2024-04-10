@@ -23,6 +23,14 @@
   margin-top: 60px;
 }
 
+.main-collection-grid .hide {
+  display: none;
+}
+
+.main-collection-grid .js-pagination-controls.show {
+  display: flex;
+}
+
 .main-collection-grid .main-collection-grid-pagination span {
   padding: 0 5px;
 }

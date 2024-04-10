@@ -1,4 +1,15 @@
 import { generateQuery } from './query.js';
+
+const selectors = {
+  prevButton: '#prev-button',
+  nextButton: '#next-button',
+  mainCollectionGridWrapper: '.main-collection-grid-wrapper',
+  jsFilterPriceInput: '.js-filter-price input',
+  dataFilterType: 'input[data-filter-type]',
+  jsPaginationControls: '.js-pagination-controls',
+  jsDefaultPagination: '.js-default-pagination',
+};
+
 class filterComponent extends HTMLElement {
   constructor() {
     super();
@@ -6,15 +17,15 @@ class filterComponent extends HTMLElement {
     this.hasNextPage;
     this.hasPrevPage;
     this.prevCursors = [];
-    this.prevButton = this.querySelector('#prev-button');
-    this.nextButton = this.querySelector('#next-button');
-    this.mainCollectionGrid = this.querySelector('.main-collection-grid-wrapper');
-    this.filterOptionPrice = this.querySelectorAll('.js-filter-price input');
-    this.filterOptionList = this.querySelectorAll('input[data-filter-type]');
+    this.prevButton = this.querySelector(selectors.prevButton);
+    this.nextButton = this.querySelector(selectors.nextButton);
+    this.mainCollectionGrid = this.querySelector(selectors.mainCollectionGridWrapper);
+    this.filterOptionPrice = this.querySelectorAll(selectors.jsFilterPriceInput);
+    this.filterOptionList = this.querySelectorAll(selectors.dataFilterType);
     this.filterOptionQuery = '';
     this.detailsElements =  this.querySelectorAll('details');
     this.parts = window.location.pathname.split('/').filter(part => part.length > 0);
-    this.collectionHandle = this.parts.length > 0 ? this.parts.pop() : 'hydrogen';
+    this.collectionHandle = this.parts.length > 0 ? this.parts.pop() : 'all';
 
     this.getSelectOption = this.getSelectOption.bind(this);
     this.getSelectOptionList = this.getSelectOptionList.bind(this);
@@ -33,7 +44,7 @@ class filterComponent extends HTMLElement {
       details.addEventListener("toggle", (event) => this.detailsToggle(event.target));
     });
   }
-  
+
   async fetchFilteredProducts (filterOptionListQuery, minPrice, maxPrice) {
     let query = generateQuery(this.collectionHandle, this.currentCursor, this.prevCursors, filterOptionListQuery, minPrice, maxPrice);
 
@@ -47,30 +58,30 @@ class filterComponent extends HTMLElement {
       body: query,
     };
 
-    return fetch(url, options)
-      .then(response => response.json())
-      .then(data => {
-        const pageInfo = data.data.collection.products.pageInfo;
-        this.hasNextPage = pageInfo.hasNextPage;
-        this.hasPrevPage = pageInfo.hasPreviousPage;
-        this.currentCursor = pageInfo.endCursor ? pageInfo.endCursor : null;
+    try {
+      const response = await fetch(url, options);
+      const data = await response.json();
 
-        if (this.hasNextPage) {
-          this.prevCursors.push(pageInfo.startCursor);
-          this.prevCursors.push(this.currentCursor);
-        }
+      const pageInfo = data.data.collection.products.pageInfo;
+      this.hasNextPage = pageInfo.hasNextPage;
+      this.hasPrevPage = pageInfo.hasPreviousPage;
+      this.currentCursor = pageInfo.endCursor ? pageInfo.endCursor : null;
 
-        this.prevCursors = Array.from(new Set(this.prevCursors))
+      if (this.hasNextPage) {
+        this.prevCursors.push(pageInfo.startCursor);
+        this.prevCursors.push(this.currentCursor);
+      }
 
-        this.prevButton.style.display = this.hasPrevPage ? 'block' : 'none';
-        this.nextButton.style.display = this.hasNextPage ? 'block' : 'none';
+      this.prevCursors = [...new Set(this.prevCursors)];
 
-        return data.data.collection.products.edges.map(edge => edge.node);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        return [];
-      });
+      this.prevButton.style.display = this.hasPrevPage ? 'block' : 'none';
+      this.nextButton.style.display = this.hasNextPage ? 'block' : 'none';
+
+      return data.data.collection.products.edges.map(edge => edge.node);
+    } catch (error) {
+      console.error('Error:', error);
+      return [];
+    }
   }
 
   async updateProductList (filterOptionListQuery, minPrice, maxPrice) {
@@ -87,7 +98,7 @@ class filterComponent extends HTMLElement {
       const response = await fetch(`/collections/${this.collectionHandle}/search?q=${productListHandle}&section_id=collection-grid`);
       const responseText = await response.text();
       const html = new DOMParser().parseFromString(responseText, 'text/html');
-      const sourceQty = html.querySelector('.main-collection-grid-wrapper');
+      const sourceQty = html.querySelector(selectors.mainCollectionGridWrapper);
 
       this.mainCollectionGrid.innerHTML = sourceQty.innerHTML;
     } catch (error) {
@@ -114,11 +125,11 @@ class filterComponent extends HTMLElement {
   }
 
   getSelectOption (e) {
-    let paginationControls = document.querySelector('.js-pagination-controls');
-    let defaultPagination = document.querySelector('.js-default-pagination');
+    let paginationControls = document.querySelector(selectors.jsPaginationControls);
+    let defaultPagination = document.querySelector(selectors.jsDefaultPagination);
 
-    defaultPagination.style.display = 'none';
-    paginationControls.style.display = 'flex';
+    defaultPagination.classList.add('hide');
+    paginationControls.classList.add('show');
 
     this.prevCursors = [];
     this.currentCursor = null;
@@ -138,12 +149,12 @@ class filterComponent extends HTMLElement {
   }
 
   getSelectOptionList (e) {
-    let paginationControls = document.querySelector('.js-pagination-controls');
-    let defaultPagination = document.querySelector('.js-default-pagination');
+    let paginationControls = document.querySelector(selectors.jsPaginationControls);
+    let defaultPagination = document.querySelector(selectors.jsDefaultPagination);
     let checkedValues = [];
 
-    defaultPagination.style.display = 'none';
-    paginationControls.style.display = 'flex';
+    defaultPagination.classList.add('hide');
+    paginationControls.classList.add('show');
 
     this.prevCursors = [];
     this.currentCursor = null;
