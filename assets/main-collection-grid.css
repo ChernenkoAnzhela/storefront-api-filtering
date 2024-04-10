@@ -12,6 +12,8 @@
   width: calc(25% - 10px);
   margin-left: 5px;
   margin-right: 5px;
+  text-decoration: none;
+  color: black;
 }
 
 .main-collection-grid .main-collection-grid-pagination {
@@ -19,6 +21,14 @@
   align-items: center;
   justify-content: center;
   margin-top: 60px;
+}
+
+.main-collection-grid .hide {
+  display: none;
+}
+
+.main-collection-grid .js-pagination-controls.show {
+  display: flex;
 }
 
 .main-collection-grid .main-collection-grid-pagination span {
@@ -77,6 +87,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 5px;
 }
 
 .main-collection-grid span.next a,

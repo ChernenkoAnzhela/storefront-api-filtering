@@ -1,209 +1,195 @@
-let currentCursor = null;
-let hasNextPage = false;
-let hasPrevPage = false;
-let prevCursors = [];
-let prevButton = document.getElementById('prev-button');
-let nextButton = document.getElementById('next-button');
-let mainCollectionGrid = document.querySelector('.main-collection-grid-wrapper');
-const parts = window.location.pathname.split('/').filter(part => part.length > 0);
-const collectionHandle = parts.length > 0 ? parts.pop() : 'hydrogen';
-let filterOptionPrice = document.querySelectorAll('.js-filter-price input');
-let filterOptionList = document.querySelectorAll('input[data-filter-type]');
-let filterOptionQuery = '';
+import { generateQuery } from './query.js';
 
-async function fetchFilteredProducts (filterOptionListQuery, minPrice, maxPrice) {
-  let afterPart = prevCursors.length > 1 ? `, after: \"${currentCursor}\"` : '';
-  let filterListOptionQuery = filterOptionListQuery.length > 0 ? filterOptionListQuery : '';
-  let filters = `[
-  ${filterListOptionQuery}
-  { price: { min: ${minPrice}, max: ${maxPrice} } }]`;
+const selectors = {
+  prevButton: '#prev-button',
+  nextButton: '#next-button',
+  mainCollectionGridWrapper: '.main-collection-grid-wrapper',
+  jsFilterPriceInput: '.js-filter-price input',
+  dataFilterType: 'input[data-filter-type]',
+  jsPaginationControls: '.js-pagination-controls',
+  jsDefaultPagination: '.js-default-pagination',
+};
 
-  let query = JSON.stringify({
-    query: `{
-      collection(handle: "${collectionHandle}") {
-        handle
-        products(first: 5${afterPart}, filters: ${filters}) {
-        filters {
-        id
-        label
-        type
-        values {
-          id
-          label
-          count
-          input
-        }
-      }
-        edges {
-          node {
-            handle
-            availableForSale
-            productType
-            vendor
-            tags
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  title
-                  selectedOptions {
-                    name
-                    value
-                  }
-                }
-              }
-            }
-          }
-        }
-          pageInfo {
-            hasNextPage
-            hasPreviousPage
-            endCursor
-            startCursor
-          }
-        }
-      }
-    }`
-  });
+class filterComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.currentCursor;
+    this.hasNextPage;
+    this.hasPrevPage;
+    this.prevCursors = [];
+    this.prevButton = this.querySelector(selectors.prevButton);
+    this.nextButton = this.querySelector(selectors.nextButton);
+    this.mainCollectionGrid = this.querySelector(selectors.mainCollectionGridWrapper);
+    this.filterOptionPrice = this.querySelectorAll(selectors.jsFilterPriceInput);
+    this.filterOptionList = this.querySelectorAll(selectors.dataFilterType);
+    this.filterOptionQuery = '';
+    this.detailsElements =  this.querySelectorAll('details');
+    this.parts = window.location.pathname.split('/').filter(part => part.length > 0);
+    this.collectionHandle = this.parts.length > 0 ? this.parts.pop() : 'all';
 
-  const url = "/api/2021-01/graphql";
-  const options = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Storefront-Access-Token": "1048a410c509db2baeca0a95b487efb8",
-    },
-    body: query,
-  };
+    this.getSelectOption = this.getSelectOption.bind(this);
+    this.getSelectOptionList = this.getSelectOptionList.bind(this);
+    this.fetchFilteredProducts = this.fetchFilteredProducts.bind(this);
+    this.updateProductList = this.updateProductList.bind(this);
 
-  return fetch(url, options)
-    .then(response => response.json())
-    .then(data => {
+    this.nextButton.addEventListener('click', () => this.goNext());
+    this.prevButton.addEventListener('click', () => this.goPrev());
+
+    this.filterOptionPrice.forEach(el => el.addEventListener("input", this.getSelectOption));
+    this.filterOptionList.forEach(el => el.addEventListener("input", this.getSelectOptionList));
+
+    this.detailsToggle = this.detailsToggle.bind(this);
+
+    this.detailsElements.forEach(details => {
+      details.addEventListener("toggle", (event) => this.detailsToggle(event.target));
+    });
+  }
+
+  async fetchFilteredProducts (filterOptionListQuery, minPrice, maxPrice) {
+    let query = generateQuery(this.collectionHandle, this.currentCursor, this.prevCursors, filterOptionListQuery, minPrice, maxPrice);
+
+    const url = "/api/2021-01/graphql";
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": "1048a410c509db2baeca0a95b487efb8",
+      },
+      body: query,
+    };
+
+    try {
+      const response = await fetch(url, options);
+      const data = await response.json();
+
       const pageInfo = data.data.collection.products.pageInfo;
-      hasNextPage = pageInfo.hasNextPage;
-      hasPrevPage = pageInfo.hasPreviousPage;
-      currentCursor = pageInfo.endCursor ? pageInfo.endCursor : null;
+      this.hasNextPage = pageInfo.hasNextPage;
+      this.hasPrevPage = pageInfo.hasPreviousPage;
+      this.currentCursor = pageInfo.endCursor ? pageInfo.endCursor : null;
 
-      if (hasNextPage) {
-        prevCursors.push(pageInfo.startCursor);
-        prevCursors.push(currentCursor);
+      if (this.hasNextPage) {
+        this.prevCursors.push(pageInfo.startCursor);
+        this.prevCursors.push(this.currentCursor);
       }
 
-      prevCursors = Array.from(new Set(prevCursors))
+      this.prevCursors = [...new Set(this.prevCursors)];
 
-      prevButton.style.display = hasPrevPage ? 'block' : 'none';
-      nextButton.style.display = hasNextPage ? 'block' : 'none';
+      this.prevButton.style.display = this.hasPrevPage ? 'block' : 'none';
+      this.nextButton.style.display = this.hasNextPage ? 'block' : 'none';
 
       return data.data.collection.products.edges.map(edge => edge.node);
-    })
-    .catch(error => {
+    } catch (error) {
       console.error('Error:', error);
       return [];
-    });
-}
+    }
+  }
 
-async function updateProductList (filterOptionListQuery, minPrice, maxPrice) {
-  try {
-    const products = await fetchFilteredProducts (filterOptionListQuery, minPrice, maxPrice);
-    let productListHandle = '';
+  async updateProductList (filterOptionListQuery, minPrice, maxPrice) {
+    try {
+      const products = await this.fetchFilteredProducts (filterOptionListQuery, minPrice, maxPrice);
+      let productListHandle = '';
 
-    products.forEach(el => {
-      productListHandle += `${el.handle}+`;
-    });
-
-    productListHandle = productListHandle.slice(0, -1);
-
-    fetch(`/search?q=${productListHandle}&section_id=collection-grid`)
-      .then((response) => response.text())
-      .then((responseText) => {
-        const html = new DOMParser().parseFromString(responseText, 'text/html');
-        const sourceQty = html.querySelector('.main-collection-grid-wrapper');
-        mainCollectionGrid.innerHTML = sourceQty.innerHTML;
-      })
-      .catch((e) => {
-        console.error(e);
+      products.forEach(el => {
+        productListHandle += `${el.handle}+`;
       });
-  } catch (error) {
-    console.error('Error updating product list:', error);
-  }
-}
 
-nextButton.addEventListener('click', () => {
-  let minPrice = parseInt(filterOptionPrice[0].value) || 0;
-  let maxPrice = parseInt(filterOptionPrice[1].value) || 1000;
+      productListHandle = productListHandle.slice(0, -1);
 
-  if (hasNextPage) updateProductList(filterOptionQuery, minPrice, maxPrice);
-});
+      const response = await fetch(`/collections/${this.collectionHandle}/search?q=${productListHandle}&section_id=collection-grid`);
+      const responseText = await response.text();
+      const html = new DOMParser().parseFromString(responseText, 'text/html');
+      const sourceQty = html.querySelector(selectors.mainCollectionGridWrapper);
 
-prevButton.addEventListener('click', () => {
-  let minPrice = parseInt(filterOptionPrice[0].value) || 0;
-  let maxPrice = parseInt(filterOptionPrice[1].value) || 1000;
-  if (hasPrevPage) {
-    prevCursors.pop();
-    currentCursor = prevCursors.length > 0 ? prevCursors[prevCursors.length - 2] : null;
-
-    updateProductList (filterOptionQuery, minPrice, maxPrice);
-  }
-});
-
-function getSelectOption (e) {
-  let paginationControls = document.querySelector('.js-pagination-controls');
-  let defaultPagination = document.querySelector('.js-default-pagination');
-
-  defaultPagination.style.display = 'none';
-  paginationControls.style.display = 'flex';
-
-  prevCursors = [];
-  currentCursor = null;
-
-  let minPrice = parseInt(filterOptionPrice[0].value) || 0;
-  let maxPrice = parseInt(filterOptionPrice[1].value) || 1000;
-
-  if (maxPrice - minPrice >= 250 && maxPrice <= filterOptionPrice[1].max) {
-    if (e.target.className === "filter-price__min") {
-      filterOptionPrice[0].value = minPrice;
-    } else {
-      filterOptionPrice[1].value = maxPrice;
+      this.mainCollectionGrid.innerHTML = sourceQty.innerHTML;
+    } catch (error) {
+      console.error('Error updating product list:', error);
     }
   }
 
-  updateProductList (filterOptionQuery, minPrice,maxPrice);
-}
+  goNext () {
+    let minPrice = parseInt(this.filterOptionPrice[0].value).toFixed(2) || 0;
+    let maxPrice = parseInt(this.filterOptionPrice[1].value).toFixed(2) || 1000;
 
-function getSelectOptionList (e) {
-  let paginationControls = document.querySelector('.js-pagination-controls');
-  let defaultPagination = document.querySelector('.js-default-pagination');
-  let checkedValues = [];
+    if (this.hasNextPage) this.updateProductList(this.filterOptionQuery, minPrice, maxPrice);
+  }
 
-  defaultPagination.style.display = 'none';
-  paginationControls.style.display = 'flex';
+  goPrev () {
+    let minPrice = parseInt(this.filterOptionPrice[0].value).toFixed(2) || 0;
+    let maxPrice = parseInt(this.filterOptionPrice[1].value).toFixed(2) || 1000;
 
-  prevCursors = [];
-  currentCursor = null;
-
-  filterOptionList.forEach(function(input) {
-    if (input.checked) {
-      checkedValues.push(input);
+    if (this.hasPrevPage) {
+      this.prevCursors.pop();
+      this.currentCursor = this.prevCursors.length > 0 ? this.prevCursors[this.prevCursors.length - 2] : null;
+      this.updateProductList (this.filterOptionQuery, minPrice, maxPrice);
     }
-  });
+  }
 
-  filterOptionQuery = '';
+  getSelectOption (e) {
+    let paginationControls = document.querySelector(selectors.jsPaginationControls);
+    let defaultPagination = document.querySelector(selectors.jsDefaultPagination);
 
-  if (checkedValues.length > 0) {
-    checkedValues.forEach(option => {
-      let filterListOptionLabel = option.getAttribute('data-filter-type');
-      if (filterListOptionLabel === 'available' ) {
-        filterOptionQuery += `{ ${filterListOptionLabel}: ${option.value} },`
+    defaultPagination.classList.add('hide');
+    paginationControls.classList.add('show');
+
+    this.prevCursors = [];
+    this.currentCursor = null;
+
+    let minPrice = parseInt(this.filterOptionPrice[0].value).toFixed(2) || 0;
+    let maxPrice = parseInt(this.filterOptionPrice[1].value).toFixed(2) || 1000;
+
+    if (maxPrice - minPrice >= 250 && maxPrice <= this.filterOptionPrice[1].max) {
+      if (e.target.className === "filter-price__min") {
+        this.filterOptionPrice[0].value = minPrice;
       } else {
-        filterOptionQuery += `{ ${filterListOptionLabel}: "${option.value}" },`
+        this.filterOptionPrice[1].value = maxPrice;
       }
-    })
+    }
+
+   this.updateProductList (this.filterOptionQuery, minPrice,maxPrice);
   }
 
-  updateProductList (filterOptionQuery, filterOptionPrice[0].value, filterOptionPrice[1].value);
+  getSelectOptionList (e) {
+    let paginationControls = document.querySelector(selectors.jsPaginationControls);
+    let defaultPagination = document.querySelector(selectors.jsDefaultPagination);
+    let checkedValues = [];
+
+    defaultPagination.classList.add('hide');
+    paginationControls.classList.add('show');
+
+    this.prevCursors = [];
+    this.currentCursor = null;
+
+    this.filterOptionList.forEach(function(input) {
+      if (input.checked) {
+        checkedValues.push(input);
+      }
+    });
+
+    this.filterOptionQuery = '';
+
+    if (checkedValues.length > 0) {
+      checkedValues.forEach(option => {
+        let filterListOptionLabel = option.getAttribute('data-filter-type');
+        if (filterListOptionLabel === 'available' ) {
+          this.filterOptionQuery += `{ ${filterListOptionLabel}: ${option.value} },`
+        } else {
+          this.filterOptionQuery += `{ ${filterListOptionLabel}: "${option.value}" },`
+        }
+      })
+    }
+
+    this.updateProductList (this.filterOptionQuery, this.filterOptionPrice[0].value, this.filterOptionPrice[1].value);
+  }
+
+  detailsToggle(openedDetails) {
+    if (openedDetails.open) {
+      this.detailsElements.forEach((details) => {
+        if (details !== openedDetails && details.open) {
+          details.open = false;
+        }
+      });
+    }
+  }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  filterOptionPrice.forEach(el => el.addEventListener("input", getSelectOption));
-  filterOptionList.forEach(el => el.addEventListener("input", getSelectOptionList));
-});
+customElements.define('filter-component', filterComponent);
